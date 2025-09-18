@@ -88,10 +88,7 @@ const Portfolio: React.FC = () => {
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
           My Portfolio
         </h2>
-        <button className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors">
-          <PlusCircle className="h-4 w-4" />
-          <span>Add Stock</span>
-        </button>
+        
         <button 
           onClick={() => setIsAddModalOpen(true)}
           className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors"
