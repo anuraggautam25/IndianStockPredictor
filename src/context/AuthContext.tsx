@@ -62,8 +62,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       const mockUser: User = {
         id: 'google_123',
-        name: 'John Doe',
-        email: 'john.doe@gmail.com',
+        name: 'Anurag Gautam',
+        email: 'anuraggautam2512@gmail.com',
         avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1',
         provider: 'google'
       };
