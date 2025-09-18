@@ -1,6 +1,7 @@
 import React from 'react';
 import { TrendingUp, Search, Briefcase, BarChart3, Moon, Sun } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import UserMenu from './UserMenu';
 
 interface HeaderProps {
   activeTab: string;
@@ -55,12 +56,15 @@ const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
             })}
           </nav>
 
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-          >
-            {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </button>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            >
+              {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </button>
+            <UserMenu />
+          </div>
         </div>
 
         {/* Mobile Navigation */}
