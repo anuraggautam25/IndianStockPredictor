@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+pydantic
+yfinance
+numpy
+pandas
+scikit-learn
+python-dotenv
+venv\Scripts\activate
