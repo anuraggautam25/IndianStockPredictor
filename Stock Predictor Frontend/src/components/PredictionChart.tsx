@@ -1,6 +1,11 @@
 import React from 'react';
 
-const PredictionChart: React.FC = () => {
+interface PredictionChartProps {
+  prediction?: any;
+  loading?: boolean;
+}
+
+const PredictionChart: React.FC<PredictionChartProps> = ({ prediction, loading }) => {
   const data = [
     { month: 'Jan', value: 25400 },
     { month: 'Feb', value: 26200 },
@@ -14,6 +19,12 @@ const PredictionChart: React.FC = () => {
 
   const maxValue = Math.max(...data.map(d => d.value));
   const minValue = Math.min(...data.map(d => d.value));
+
+  // ✅ Extract backend prediction data
+  const signal = prediction?.signal || 'HOLD';
+  const confidence = prediction?.confidence || { buy: 0.0, hold: 0.0, sell: 0.0 };
+  const confidenceLevel = Math.round(Math.max(confidence.buy, confidence.hold, confidence.sell) * 100);
+  const predictedTarget = signal === 'BUY' ? maxValue * 1.05 : signal === 'SELL' ? maxValue * 0.95 : maxValue;
 
   return (
     <div className="space-y-4">
@@ -33,9 +44,9 @@ const PredictionChart: React.FC = () => {
         </div>
       </div>
 
+      {/* Chart */}
       <div className="relative h-64">
         <svg viewBox="0 0 400 200" className="w-full h-full">
-          {/* Grid lines */}
           {[0, 1, 2, 3, 4].map((i) => (
             <line
               key={i}
@@ -49,7 +60,6 @@ const PredictionChart: React.FC = () => {
             />
           ))}
 
-          {/* Chart line */}
           <polyline
             points={data
               .map((d, i) => {
@@ -64,7 +74,6 @@ const PredictionChart: React.FC = () => {
             strokeWidth="2"
           />
 
-          {/* Data points */}
           {data.map((d, i) => {
             const x = (i * 400) / (data.length - 1);
             const y = 180 - ((d.value - minValue) / (maxValue - minValue)) * 160;
@@ -81,14 +90,12 @@ const PredictionChart: React.FC = () => {
           })}
         </svg>
 
-        {/* X-axis labels */}
         <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-gray-500 dark:text-gray-400">
           {data.map((d, i) => (
             <span key={i}>{d.month}</span>
           ))}
         </div>
 
-        {/* Y-axis labels */}
         <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-xs text-gray-500 dark:text-gray-400">
           {[maxValue, (maxValue + minValue) / 2, minValue].map((value, i) => (
             <span key={i}>{Math.round(value).toLocaleString()}</span>
@@ -96,20 +103,35 @@ const PredictionChart: React.FC = () => {
         </div>
       </div>
 
+      {/* ✅ Display AI prediction */}
       <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
         <div className="text-center">
-          <div className="text-lg font-semibold text-green-600">+12.5%</div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">YTD Growth</div>
+          <div className="text-lg font-semibold text-emerald-600">
+            {signal}
+          </div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            AI Signal
+          </div>
         </div>
         <div className="text-center">
-          <div className="text-lg font-semibold text-blue-600">29,500</div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">Predicted Target</div>
+          <div className="text-lg font-semibold text-blue-600">
+            {Math.round(predictedTarget).toLocaleString()}
+          </div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            Predicted Target
+          </div>
         </div>
         <div className="text-center">
-          <div className="text-lg font-semibold text-emerald-600">85%</div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">Confidence</div>
+          <div className="text-lg font-semibold text-green-600">
+            {confidenceLevel}%
+          </div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            Confidence
+          </div>
         </div>
       </div>
+
+      {loading && <p className="text-center text-gray-400">Loading prediction...</p>}
     </div>
   );
 };

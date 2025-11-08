@@ -3,18 +3,46 @@ import { Search, Filter, TrendingUp, TrendingDown } from 'lucide-react';
 import StockCard from './StockCard';
 import { popularStocks } from '../data/stockData';
 
+const API_URL = import.meta.env.VITE_API_URL; // ✅ read from .env
+
 const StockSearch: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterBy, setFilterBy] = useState('all');
 
+  // ✅ New states for AI prediction
+  const [prediction, setPrediction] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  // ✅ Function to call FastAPI backend
+  const fetchPrediction = async (ticker: string) => {
+    try {
+      setLoading(true);
+      setPrediction(null);
+      const res = await fetch(`${API_URL}/predict?ticker=${ticker}`);
+      if (!res.ok) throw new Error('Failed to fetch prediction');
+      const data = await res.json();
+      setPrediction(data);
+    } catch (error) {
+      console.error('Error fetching prediction:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // filter logic (unchanged)
   const filteredStocks = popularStocks.filter((stock) => {
-    const matchesSearch = stock.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch =
+      stock.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stock.symbol.toLowerCase().includes(searchTerm.toLowerCase());
 
     if (filterBy === 'all') return matchesSearch;
     if (filterBy === 'gainers') return matchesSearch && stock.change > 0;
     if (filterBy === 'losers') return matchesSearch && stock.change < 0;
-    if (filterBy === 'buy') return matchesSearch && (stock.recommendation === 'Buy' || stock.recommendation === 'Strong Buy');
+    if (filterBy === 'buy')
+      return (
+        matchesSearch &&
+        (stock.recommendation === 'Buy' || stock.recommendation === 'Strong Buy')
+      );
 
     return matchesSearch;
   });
@@ -29,17 +57,30 @@ const StockSearch: React.FC = () => {
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
         <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search stocks by name or symbol..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
+          {/* ✅ search box */}
+          <div className="flex-1 relative flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search stocks by name or symbol..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+
+            {/* ✅ Predict button */}
+            <button
+              onClick={() => fetchPrediction(searchTerm || '^NSEI')}
+              disabled={loading}
+              className="bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition disabled:opacity-50"
+            >
+              {loading ? 'Predicting...' : 'Predict'}
+            </button>
           </div>
 
+          {/* filter dropdown (unchanged) */}
           <div className="relative">
             <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <select
@@ -55,6 +96,30 @@ const StockSearch: React.FC = () => {
           </div>
         </div>
 
+        {/* ✅ Prediction Result Section */}
+        {prediction && (
+          <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-6 shadow-inner">
+            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+              AI Prediction Result
+            </h3>
+            {prediction.error ? (
+              <p className="text-red-500">{prediction.error}</p>
+            ) : (
+              <div className="space-y-1 text-gray-800 dark:text-gray-200">
+                <p><strong>Ticker:</strong> {prediction.ticker}</p>
+                <p><strong>Signal:</strong> {prediction.signal}</p>
+                <p><strong>Confidence:</strong></p>
+                <ul className="ml-4 list-disc">
+                  <li>BUY: {prediction.confidence?.buy}</li>
+                  <li>HOLD: {prediction.confidence?.hold}</li>
+                  <li>SELL: {prediction.confidence?.sell}</li>
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* existing stock cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredStocks.length > 0 ? (
             filteredStocks.map((stock) => (
@@ -68,7 +133,9 @@ const StockSearch: React.FC = () => {
         </div>
       </div>
 
+      {/* Gainers / Losers / AI Picks (unchanged) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Gainers */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <div className="flex items-center space-x-3 mb-4">
             <TrendingUp className="h-6 w-6 text-green-500" />
@@ -78,7 +145,7 @@ const StockSearch: React.FC = () => {
           </div>
           <div className="space-y-3">
             {popularStocks
-              .filter(stock => stock.change > 0)
+              .filter((stock) => stock.change > 0)
               .sort((a, b) => b.changePercent - a.changePercent)
               .slice(0, 3)
               .map((stock) => (
@@ -99,6 +166,7 @@ const StockSearch: React.FC = () => {
           </div>
         </div>
 
+        {/* Losers */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <div className="flex items-center space-x-3 mb-4">
             <TrendingDown className="h-6 w-6 text-red-500" />
@@ -108,7 +176,7 @@ const StockSearch: React.FC = () => {
           </div>
           <div className="space-y-3">
             {popularStocks
-              .filter(stock => stock.change < 0)
+              .filter((stock) => stock.change < 0)
               .sort((a, b) => a.changePercent - b.changePercent)
               .slice(0, 3)
               .map((stock) => (
@@ -129,6 +197,7 @@ const StockSearch: React.FC = () => {
           </div>
         </div>
 
+        {/* AI Picks (unchanged) */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <div className="flex items-center space-x-3 mb-4">
             <div className="h-6 w-6 bg-gradient-to-r from-emerald-500 to-blue-600 rounded"></div>
@@ -138,7 +207,7 @@ const StockSearch: React.FC = () => {
           </div>
           <div className="space-y-3">
             {popularStocks
-              .filter(stock => stock.recommendation === 'Strong Buy')
+              .filter((stock) => stock.recommendation === 'Strong Buy')
               .slice(0, 3)
               .map((stock) => (
                 <div key={stock.symbol} className="flex items-center justify-between">

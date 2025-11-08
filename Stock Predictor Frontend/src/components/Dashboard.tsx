@@ -1,12 +1,34 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import StockCard from './StockCard';
 import PredictionChart from './PredictionChart';
 import MarketSummary from './MarketSummary';
 import RecommendationsList from './RecommendationsList';
 import { popularStocks } from '../data/stockData';
 
+const API_URL = import.meta.env.VITE_API_URL; // ✅ backend from .env
+
 const Dashboard: React.FC = () => {
   const topStocks = popularStocks.slice(0, 6);
+  const [prediction, setPrediction] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  // ✅ Fetch backend prediction once on load
+  useEffect(() => {
+    const fetchPrediction = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_URL}/predict?ticker=^NSEI`);
+        if (!res.ok) throw new Error('Failed to fetch prediction');
+        const data = await res.json();
+        setPrediction(data);
+      } catch (err) {
+        console.error('Error fetching prediction:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPrediction();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -27,7 +49,9 @@ const Dashboard: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Market Prediction Analysis
             </h3>
-            <PredictionChart />
+
+            {/* ✅ Pass prediction result to PredictionChart */}
+            <PredictionChart prediction={prediction} loading={loading} />
           </div>
         </div>
 
