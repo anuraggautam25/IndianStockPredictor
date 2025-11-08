@@ -328,7 +328,7 @@ app = FastAPI(
 # CORS - allow all for development; change in production
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://indianstockpredictor.netlify.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
