@@ -84,7 +84,6 @@ class PositionalEncoding(nn.Module):
 
     def forward(self, x):
         seq_len = x.size(1)
-        # ✅ Safe buffer access (fixes self.pe error)
         pe = getattr(self, "pos_embedding", None)
         if pe is None:
             raise RuntimeError("Positional encoding buffer not initialized.")
@@ -149,7 +148,6 @@ def ensure_model_and_scaler(ticker="^NSEI"):
             return model, scaler, feat_cols
         except Exception as e:
             print(f"⚠️ Error loading model: {e}, retraining...")
-    # Train if missing
     return train_and_save_model(ticker)
 
 # ---------------------------
@@ -211,5 +209,9 @@ def predict(ticker: str = "^NSEI"):
     except Exception as e:
         return {"error": str(e)}
 
+# ---------------------------
+# ✅ FIXED Render-Compatible Server Start
+# ---------------------------
 if __name__ == "__main__":
-    uvicorn.run("app:app", host="0.0.0.0", port=8080, reload=True)
+    port = int(os.environ.get("PORT", 8080))
+    uvicorn.run("app:app", host="0.0.0.0", port=port)
