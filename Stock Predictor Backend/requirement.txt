@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+torch           # heavy; Render supports this but check build times
+joblib
+pandas
+numpy
+scikit-learn
+yfinance
+python-multipart
