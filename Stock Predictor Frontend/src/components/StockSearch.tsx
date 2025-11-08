@@ -3,7 +3,7 @@ import { Search, Filter, TrendingUp, TrendingDown } from 'lucide-react';
 import StockCard from './StockCard';
 import { popularStocks } from '../data/stockData';
 
-const API_URL = import.meta.env.VITE_API_URL; // ✅ read from .env
+const API_URL = import.meta.env.VITE_API_URL || "https://indianstockpredictor.onrender.com";
 
 const StockSearch: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
