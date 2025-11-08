@@ -157,7 +157,7 @@ app = FastAPI(title="Indian Stock Predictor API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # replace with Netlify URL for production
+    allow_origins=["https://indianstockpredictor.netlify.app"],  # replace with Netlify URL for production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
